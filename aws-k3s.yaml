@@ -27,7 +27,7 @@ modules:
       cluster_name: {{ .name }}
       cluster_domain: {{ .variables.domain }}
       zone_delegation: {{ if eq .variables.domain "cluster.dev" }}true{{ else }}false{{ end }}
-  {{- if .variables.vpc.create }}
+  {{- if not .variables.vpc_id }}
   - 
     name: vpc
     type: terraform
@@ -68,7 +68,7 @@ modules:
         - "--disable traefik"
       domain: {{ remoteState "this.route53.domain" }}
       k3s_version: {{ .variables.k3s_version }}
-      {{- if .variables.vpc.create }}
+      {{- if .variables.vpc_id }}
       public_subnets: {{ remoteState "this.vpc.public_subnets" }}
       {{- else }}
       public_subnets: {{ insertYAML .variables.public_subnets }}
