@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+  argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: external-dns
+    targetRevision: 4.4.3
+    helm:
+      values: |
+        aws:
+          region: {{ .variables.region }}
+          zoneType: "public"
+        policy: upsert-only
+        serviceAccount:
+          create: true
+        metrics:
+          enabled: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-dns
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true
+      - CreateNamespace=true
