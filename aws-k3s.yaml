@@ -69,9 +69,9 @@ modules:
       domain: {{ remoteState "this.route53.domain" }}
       k3s_version: {{ .variables.k3s_version }}
       {{- if .variables.vpc_id }}
-      public_subnets: {{ remoteState "this.vpc.public_subnets" }}
-      {{- else }}
       public_subnets: {{ insertYAML .variables.public_subnets }}
+      {{- else }}
+      public_subnets: {{ remoteState "this.vpc.public_subnets" }}
       {{- end }}
       key_name: {{ remoteState "this.aws_key_pair.this_key_pair_key_name" }}
       region: {{ .variables.region }}
