@@ -126,7 +126,7 @@ modules:
       chart: "ingress-nginx"
       version: "3.21.0"
     kubeconfig: ../kubeconfig_{{ .name }}
-    depends_on: this.eks_auth
+    depends_on: this.k3s
     additional_options:
       namespace: "ingress-nginx"
       create_namespace: true
