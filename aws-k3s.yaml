@@ -119,6 +119,26 @@ modules:
       on_destroy: true
       on_plan: true
   - 
+    name: ingress-nginx
+    type: helm
+    source:
+      repository: "https://kubernetes.github.io/ingress-nginx"
+      chart: "ingress-nginx"
+      version: "3.21.0"
+    kubeconfig: ../kubeconfig_{{ .name }}
+    depends_on: this.eks_auth
+    additional_options:
+      namespace: "ingress-nginx"
+      create_namespace: true
+    pre_hook:
+      command: *getKubeconfig
+      on_destroy: true
+      on_plan: true
+    inputs:
+        service.type: LoadBalancer
+        controller.admissionWebhooks.enabled: false
+        service.externalTrafficPolicy: Local
+  - 
     name: argocd
     type: helm
     source:
