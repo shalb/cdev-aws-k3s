@@ -125,7 +125,7 @@ modules:
       repository: "https://kubernetes.github.io/ingress-nginx"
       chart: "ingress-nginx"
       version: "3.21.0"
-    kubeconfig: ../kubeconfig_{{ .name }}
+    kubeconfig: ./kubeconfig_{{ .name }}
     depends_on: this.k3s
     additional_options:
       namespace: "ingress-nginx"
