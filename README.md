@@ -15,12 +15,13 @@ In this repository you will find all information and samples necessary to start 
 ## Quick Start
 
 1. [Configure access to AWS](https://cluster.dev/aws-cloud-provider/) and export required variables. 
-2. Clone project to your localhost:
+2. Clone examle project:
     ```
-    git clone https://github.com/shalb/cluster.dev.git
-    cd cluster.dev/examples/aws_k3s/
+    git clone https://github.com/shalb/cdev-aws-k3s.git
+    cd examples/
     ```
   
-3. Find all necessary config files in the [example directory](https://github.com/shalb/cluster.dev/tree/master/examples/aws_k3s). Edit variables in edit fields, if necessary.
-4. Run `cdev apply`.
-5. You can also use [code generator](https://cluster.dev/quick-start/) to create the same example. 
+3. Edit variables in the example's files, if necessary.
+4. Run `cdev plan`.
+5. Run `cdev apply`
+6. You can also use [code generator](https://cluster.dev/quick-start/) to create the same example. 
