@@ -19,7 +19,6 @@ In this repository you will find all information and samples necessary to start 
     ```
     git clone https://github.com/shalb/cluster.dev.git
     cd cluster.dev/examples/aws_k3s/
-    cdev plan
     ```
   
 3. Find all necessary config files in the [example directory](https://github.com/shalb/cluster.dev/tree/master/examples/aws_k3s). Edit variables in edit fields, if necessary.
