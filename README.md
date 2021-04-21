@@ -27,7 +27,7 @@ The resources to be created:
 ## Quick Start
 
 1. [Configure access to AWS](https://cluster.dev/aws-cloud-provider/) and export required variables. 
-2. Clone examle project:
+2. Clone example project:
     ```
     git clone https://github.com/shalb/cdev-aws-k3s.git
     cd examples/
