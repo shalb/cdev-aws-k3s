@@ -58,7 +58,7 @@ modules:
   - 
     name: k3s
     type: terraform
-    source: github.com/shalb/terraform-aws-k3s?ref=v0.2.0_rc2
+    source: github.com/shalb/terraform-aws-k3s?ref=v0.2.0
     pre_hook:
       command: *getKubeconfig
       on_apply: false
