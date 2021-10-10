@@ -1,6 +1,6 @@
 # cdev-aws-k3s
 
-Cdev uses [project templates](https://cluster.dev/stack-template-development/) to generate users' projects in a desired cloud. AWS-k3s is a cdev template that creates and provisions Kubernetes clusters in [AWS cloud](https://cluster.dev/aws-cloud-provider/) by means of k3s utility. The template deploys a k3s cluster using existing or created VPC and domain name.
+Cdev uses [project templates](https://docs.cluster.dev/stack-template-development/) to generate users' projects in a desired cloud. AWS-k3s is a cdev template that creates and provisions Kubernetes clusters in [AWS cloud](https://docs.cluster.dev/aws-cloud-provider/) by means of k3s utility. The template deploys a k3s cluster using existing or created VPC and domain name.
 
 In this repository you will find all information and samples necessary to start a k3s cluster in AWS.  
 
