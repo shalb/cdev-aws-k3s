@@ -58,7 +58,7 @@ units:
   - 
     name: k3s
     type: tfmodule
-    source: github.com/shalb/terraform-aws-k3s?ref=v0.2.0
+    source: github.com/shalb/terraform-aws-k3s?ref=removed_csi_addon
     pre_hook:
       command: *getKubeconfig
       on_apply: false
