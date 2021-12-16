@@ -8,10 +8,10 @@ _p: &provider_aws
 
 name: aws-k3s
 kind: InfraTemplate
-modules:
+units:
   - 
     name: aws_key_pair
-    type: terraform
+    type: tfmodule
     source: github.com/terraform-aws-modules/terraform-aws-key-pair?ref=v0.6.0
     providers: *provider_aws
     inputs:
@@ -20,7 +20,7 @@ modules:
       key_name: {{ .variables.public_key_name }}
   - 
     name: route53
-    type: terraform
+    type: tfmodule
     source: github.com/shalb/cluster.dev-domain?ref=0.1.0
     inputs:
       region: {{ .variables.region }}
@@ -30,7 +30,7 @@ modules:
   {{- if not .variables.vpc_id }}
   - 
     name: vpc
-    type: terraform
+    type: tfmodule
     providers: *provider_aws
     source: terraform-aws-modules/vpc/aws
     version: "2.70.0"
@@ -49,7 +49,7 @@ modules:
   {{- end }}
   - 
     name: ext-dns-iam
-    type: terraform
+    type: tfmodule
     source: ./ext-dns-iam
     providers: *provider_aws
     inputs:
@@ -57,7 +57,7 @@ modules:
       domain: {{ remoteState "this.route53.zone_id" }}
   - 
     name: k3s
-    type: terraform
+    type: tfmodule
     source: github.com/shalb/terraform-aws-k3s?ref=v0.2.0
     pre_hook:
       command: *getKubeconfig
@@ -138,6 +138,24 @@ modules:
         service.type: LoadBalancer
         controller.admissionWebhooks.enabled: false
         service.externalTrafficPolicy: Local
+  - 
+    name: csi
+    type: helm
+    source:
+      repository: "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
+      chart: "aws-ebs-csi-driver"
+      version: "0.9.14"
+    kubeconfig: ./kubeconfig_{{ .name }}
+    depends_on: this.k3s
+    additional_options:
+      namespace: "kube-system"
+    pre_hook:
+      command: *getKubeconfig
+      on_destroy: true
+      on_plan: true
+    values:
+      - file: ./csi/values.yaml
+        apply_template: false
   - 
     name: argocd
     type: helm
