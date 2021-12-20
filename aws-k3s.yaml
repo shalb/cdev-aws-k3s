@@ -7,7 +7,7 @@ _p: &provider_aws
 
 
 name: aws-k3s
-kind: InfraTemplate
+kind: StackTemplate
 units:
   - 
     name: aws_key_pair
