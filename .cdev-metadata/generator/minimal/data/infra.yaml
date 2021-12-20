@@ -1,6 +1,6 @@
 name: my-k3s-cluster
-template: https://github.com/shalb/cdev-aws-k3s?ref=v0.0.2
-kind: Infrastructure
+template: https://github.com/shalb/cdev-aws-k3s?ref=master
+kind: Stack
 backend: aws-backend
 variables:
   bucket: {{ .project.variables.state_bucket_name }}
