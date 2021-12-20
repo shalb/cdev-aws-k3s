@@ -1,5 +1,5 @@
 name: k3s-test
-template: https://github.com/shalb/cdev-aws-k3s/?ref=update_csi
+template: https://github.com/shalb/cdev-aws-k3s/?ref=master
 kind: Stack
 backend: aws-backend
 variables:
