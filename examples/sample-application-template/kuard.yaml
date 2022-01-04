@@ -1,0 +1,14 @@
+name: kuard-template
+kind: StackTemplate
+units:
+  -
+    name: kuard
+    type: k8s-manifest
+    namespace: default
+    path: ./manifests/
+    apply_template: true
+    kubeconfig: ./kubeconfig_{{ .name }}
+    kubectl_opts: "--wait=true"
+    inputs:
+      ingress_domain: kuard.{{ .variables.domain }}
+      replicas: {{ .variables.replicas }}

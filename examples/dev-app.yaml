@@ -1,0 +1,9 @@
+name: k3s-demo-app
+template: ./sample-application-template
+kind: Stack
+backend: aws-backend
+variables:
+  bucket: {{ .project.variables.state_bucket_name }}
+  region: {{ .project.variables.region }}
+  organization: {{ .project.variables.organization }}
+  domain: "k3s-demo.cluster.dev"
