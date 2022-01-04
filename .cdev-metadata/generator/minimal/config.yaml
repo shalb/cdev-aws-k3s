@@ -3,7 +3,7 @@ options:
   - name: name
     description: Project name
     regex: "^[a-zA-Z][a-zA-Z_0-9\\-]{0,32}$"
-    default: "demo-project"
+    default: "cdev-demo"
   - name: organization
     description: Organization name
     regex: "^[a-zA-Z][a-zA-Z_0-9\\-]{0,64}$"
