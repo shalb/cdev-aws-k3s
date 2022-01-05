@@ -7,3 +7,4 @@ variables:
   region: {{ .project.variables.region }}
   organization: {{ .project.variables.organization }}
   domain: "k3s-demo.cluster.dev"
+  kubeconfig: {{ output "k3s-demo.kubeconfig.kubeconfig_path" }}

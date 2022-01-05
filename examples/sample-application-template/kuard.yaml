@@ -7,7 +7,7 @@ units:
     namespace: default
     path: ./manifests/
     apply_template: true
-    kubeconfig: ./kubeconfig_{{ .name }}
+    kubeconfig: {{ .variables.kubeconfig }}
     kubectl_opts: "--wait=true"
     inputs:
       ingress_domain: kuard.{{ .variables.domain }}

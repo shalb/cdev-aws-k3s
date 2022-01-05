@@ -1,6 +1,5 @@
 {{- $createVpcCIDR := "10.8.0.0/18" -}}
 {{- $azs_count := len .variables.azs -}}
-_: &getKubeconfig "export KUBECONFIG=./kubeconfig_{{ .variables.cluster_name }} && aws s3 cp s3://{{ .variables.bucket }}/{{ .variables.cluster_name }}/kubeconfig ./kubeconfig_{{ .variables.cluster_name }}"
 _p: &provider_aws
 - aws:
     region: {{ .variables.region }}
@@ -61,7 +60,7 @@ units:
     type: tfmodule
     source: github.com/shalb/terraform-aws-k3s?ref=removed_csi_addon
     pre_hook:
-      command: *getKubeconfig
+      command: {{ output "this.kubeconfig.kubeconfig_path" }}
       on_apply: false
       on_destroy: true
     inputs:
@@ -195,7 +194,7 @@ units:
     inputs:
       cluster_name: {{ .variables.cluster_name }}
       region: {{ .variables.region }}
-      kubeconfig: *getKubeconfig
+      kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
       k3s_version: {{ .variables.k3s_version }}
       argocd_url: https://argocd.{{ .variables.cluster_name }}.{{ .variables.domain }}
 
