@@ -39,20 +39,29 @@ spec:
   selector:
     app: kuard
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     app.log-type: json
+    kubernetes.io/ingress.class: nginx
   labels:
     app: kuard
   name: kuard
 spec:
   rules:
-  - host: {{ .variables.ingress_domain }}
+  - host: kuard.{{ .variables.domain }}
     http:
       paths:
-      - backend:
-          serviceName: kuard
-          servicePort: 80
-        path: /
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kuard
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - kuard.{{ .variables.domain }}
+    secretName: kuard-secret

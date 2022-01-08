@@ -3,13 +3,14 @@ template: ../
 kind: Stack
 backend: aws-backend
 variables:
+  cluster_name: k3s-demo
   bucket: {{ .project.variables.state_bucket_name }}
   region: {{ .project.variables.region }}
   organization: {{ .project.variables.organization }}
-  domain: cluster.dev
+  domain: {{ .project.variables.domain }}
   instance_type: "t3.medium"
-  k3s_version: "1.20.5+k3s1"
-  # Uncomment line belov if you need to specify the VPC
+  k3s_version: "1.22.5+k3s1"
+  # Uncomment lines below if you need to specify the VPC
   #vpc_id: "vpc-5ecf1234"
   #public_subnets:
   #  - "subnet-d775f0bd"

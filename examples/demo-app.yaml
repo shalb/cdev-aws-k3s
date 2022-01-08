@@ -3,8 +3,6 @@ template: ./sample-application-template
 kind: Stack
 backend: aws-backend
 variables:
-  bucket: {{ .project.variables.state_bucket_name }}
-  region: {{ .project.variables.region }}
-  organization: {{ .project.variables.organization }}
-  domain: "k3s-demo.cluster.dev"
+  replicas: 3
+  domain: {{ output "k3s-demo.print_outputs.cluster_name" }}.{{ .project.variables.domain }}
   kubeconfig: {{ output "k3s-demo.kubeconfig.kubeconfig_path" }}

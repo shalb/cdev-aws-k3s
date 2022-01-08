@@ -7,9 +7,9 @@ _p: &provider_aws
 
 name: aws-k3s
 kind: StackTemplate
-cliVersion: ">=0.6.1" 
+cliVersion: ">=0.6.1"
 units:
-  - 
+  -
     name: aws_key_pair
     type: tfmodule
     source: github.com/terraform-aws-modules/terraform-aws-key-pair?ref=v0.6.0
@@ -18,7 +18,7 @@ units:
       create_key_pair: true
       public_key: {{ .variables.public_key }}
       key_name: {{ .variables.public_key_name }}
-  - 
+  -
     name: route53
     type: tfmodule
     source: github.com/shalb/cluster.dev-domain?ref=0.1.0
@@ -28,26 +28,26 @@ units:
       cluster_domain: {{ .variables.domain }}
       zone_delegation: {{ if eq .variables.domain "cluster.dev" }}true{{ else }}false{{ end }}
   {{- if not .variables.vpc_id }}
-  - 
+  -
     name: vpc
     type: tfmodule
     providers: *provider_aws
     source: terraform-aws-modules/vpc/aws
-    version: "2.70.0"
+    version: "3.11.0"
     inputs:
       name: {{ .variables.cluster_name }}
       cidr: {{ $createVpcCIDR }}
       public_subnets:
       {{- range $index, $_ := .variables.azs }}
-       - {{ cidrSubnet $createVpcCIDR 4 $index }}
+        - {{ cidrSubnet $createVpcCIDR 4 $index }}
       {{- end }}
       private_subnets:
       {{- range $index, $_ := .variables.azs }}
-       - {{ cidrSubnet $createVpcCIDR 4 (add $index $azs_count ) }}
+        - {{ cidrSubnet $createVpcCIDR 4 (add $index $azs_count ) }}
       {{- end }}
       azs: {{ insertYAML .variables.azs }}
   {{- end }}
-  - 
+  -
     name: ext-dns-iam
     type: tfmodule
     source: ./ext-dns-iam
@@ -55,14 +55,10 @@ units:
     inputs:
       name: {{ .variables.cluster_name }}-test
       domain: {{ remoteState "this.route53.zone_id" }}
-  - 
+  -
     name: k3s
     type: tfmodule
-    source: github.com/shalb/terraform-aws-k3s?ref=removed_csi_addon
-    pre_hook:
-      command: {{ output "this.kubeconfig.kubeconfig_path" }}
-      on_apply: false
-      on_destroy: true
+    source: github.com/shalb/terraform-aws-k3s??ref=v0.3.0
     inputs:
       cluster_name: {{ .variables.cluster_name }}
       extra_args:
@@ -79,12 +75,12 @@ units:
       s3_bucket: {{ .variables.bucket }}
       master_node_count: {{ .variables.master_node_count }}
       worker_node_groups: {{ insertYAML .variables.worker_node_groups  }}
-      master_iam_policies: 
+      master_iam_policies:
         - {{ remoteState "this.ext-dns-iam.arn" }}
-      worker_iam_policies: 
+      worker_iam_policies:
         - {{ remoteState "this.ext-dns-iam.arn" }}
       enable_asg_rolling_auto_update: true
-  - 
+  -
     name: kubeconfig
     type: shell
     force_apply: true
@@ -97,13 +93,13 @@ units:
     outputs:
       type: separator
       separator: "="
-  - 
+  -
     name: cert-manager
     type: helm
     source:
       repository: "https://charts.jetstack.io"
       chart: "cert-manager"
-      version: "v1.2.0"
+      version: "v1.6.1"
     kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
     additional_options:
       namespace: "cert-manager"
@@ -116,19 +112,19 @@ units:
       ingressShim.defaultACMEChallengeType: dns01
       securityContext.enabled: false
       serviceAccount.create: true
-  - 
+  -
     name: cert-manager-issuer
     type: k8s-manifest
     path: ./cert-manager/issuer.yaml
     kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
     depends_on: this.cert-manager
-  - 
+  -
     name: ingress-nginx
     type: helm
     source:
       repository: "https://kubernetes.github.io/ingress-nginx"
       chart: "ingress-nginx"
-      version: "3.21.0"
+      version: "4.0.13"
     kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
     additional_options:
       namespace: "ingress-nginx"
@@ -137,33 +133,33 @@ units:
         service.type: LoadBalancer
         controller.admissionWebhooks.enabled: false
         service.externalTrafficPolicy: Local
-  - 
+        controller.ingressClassResource.default: true
+  -
     name: csi
     type: helm
     source:
       repository: "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
       chart: "aws-ebs-csi-driver"
-      version: "0.9.14"
+      version: "2.6.2"
     kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
     additional_options:
       namespace: "kube-system"
     values:
       - file: ./csi/values.yaml
         apply_template: false
-  - 
+  -
     name: argocd
     type: helm
     source:
       repository: "https://argoproj.github.io/argo-helm"
       chart: "argo-cd"
-      version: "2.11.0"
+      version: "3.29.5"
     kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
     depends_on: this.cert-manager-issuer
     additional_options:
       namespace: "argocd"
       create_namespace: true
     inputs:
-      global.image.tag: v1.8.3
       service.type: LoadBalancer
       server.certificate.domain: argocd.{{ .variables.cluster_name }}.{{ .variables.domain }}
       server.certificate.enabled: true
@@ -181,13 +177,13 @@ units:
       server.config.url: https://argocd.{{ .variables.cluster_name }}.{{ .variables.domain }}
       configs.secret.argocdServerAdminPassword: {{ .variables.argocdServerAdminPassword }}
       configs.secret.argocdServerAdminPasswordMtime: "2021-01-01T00:00:00Z"
-  - 
+  -
     name: argocd_apps
     type: k8s-manifest
     path: ./argocd-apps/
     kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
     depends_on: this.argocd
-  - 
+  -
     name: print_outputs
     type: printer
     depends_on: this.argocd_apps
@@ -197,4 +193,3 @@ units:
       kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
       k3s_version: {{ .variables.k3s_version }}
       argocd_url: https://argocd.{{ .variables.cluster_name }}.{{ .variables.domain }}
-

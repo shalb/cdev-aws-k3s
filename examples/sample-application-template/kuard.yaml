@@ -10,5 +10,4 @@ units:
     kubeconfig: {{ .variables.kubeconfig }}
     kubectl_opts: "--wait=true"
     inputs:
-      ingress_domain: kuard.{{ .variables.domain }}
       replicas: {{ .variables.replicas }}
