@@ -1,0 +1,8 @@
+name: k3s-demo-app
+template: ./sample-application-template
+kind: Stack
+backend: aws-backend
+variables:
+  replicas: 3
+  domain: {{ output "k3s-demo.print_outputs.cluster_name" }}.{{ .project.variables.domain }}
+  kubeconfig: {{ output "k3s-demo.kubeconfig.kubeconfig_path" }}

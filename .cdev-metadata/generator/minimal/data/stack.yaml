@@ -9,7 +9,7 @@ variables:
   cluster_name: /{ .name }/
   domain: cluster.dev
   instance_type: "t3a.medium"
-  k3s_version: "1.20.5+k3s1"
+  k3s_version: "1.22.5+k3s1"
   # If you want to use existing VPC and subnets, uncomment the options below and set correct VPC ID and the subnets IDs.
   # Otherwise, the new VPC and subnets will be created automatically.
   # vpc_id: "vpc-*****"
