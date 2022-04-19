@@ -1,4 +1,4 @@
-description: AWS cloud, k3s Kubernetes cluster with ArgoCD, minimal configuration
+description: AWS cloud, k3s Kubernetes. Monitoring example.
 options:
   - name: name
     description: Project name
