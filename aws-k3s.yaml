@@ -58,7 +58,7 @@ units:
   -
     name: k3s
     type: tfmodule
-    source: github.com/shalb/terraform-aws-k3s?ref=v0.3.0
+    source: github.com/shalb/terraform-aws-k3s?ref=v0.4.0
     inputs:
       cluster_name: {{ .variables.cluster_name }}
       extra_args:
@@ -140,7 +140,7 @@ units:
     source:
       repository: "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
       chart: "aws-ebs-csi-driver"
-      version: "2.6.2"
+      version: "2.6.9"
     kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
     additional_options:
       namespace: "kube-system"
