@@ -184,10 +184,10 @@ units:
     kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
     depends_on: this.argocd
   -
-    name: print_outputs
+    name: outputs
     type: printer
     depends_on: this.argocd_apps
-    inputs:
+    outputs:
       cluster_name: {{ .variables.cluster_name }}
       region: {{ .variables.region }}
       kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
