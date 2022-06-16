@@ -1,5 +1,5 @@
 name: k3s-demo
-template: ../
+template: https://github.com/shalb/terraform-aws-k3s?ref=v0.4.0
 kind: Stack
 backend: aws-backend
 variables:
