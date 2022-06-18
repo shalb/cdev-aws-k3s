@@ -1,5 +1,5 @@
 name: my-k3s-cluster
-template: https://github.com/shalb/cdev-aws-k3s?ref=v0.3.0
+template: https://github.com/shalb/cdev-aws-k3s?ref=v0.3.2
 kind: Stack
 backend: aws-backend
 variables:
