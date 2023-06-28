@@ -1,8 +1,0 @@
-name: /{ .name }/
-kind: Project
-backend: aws-backend
-variables:
-  organization: /{ .organization }/
-  region: /{ .region }/
-  state_bucket_name: /{ .bucket_name }/
-  

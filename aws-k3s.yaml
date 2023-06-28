@@ -1,5 +1,12 @@
 {{- $createVpcCIDR := "10.8.0.0/18" -}}
-{{- $azs_count := len .variables.azs -}}
+{{- $region := .variables.region -}}
+{{- $azs := list "" -}}
+{{- if .variables.azs -}}
+{{- $azs = .variables.azs -}}
+{{- else -}}
+{{- $azs = list (printf "%sa" $region) (printf "%sb" $region) (printf "%sc" $region) -}}
+{{- end -}}
+{{- $azs_count := len $azs -}}
 _p: &provider_aws
 - aws:
     region: {{ .variables.region }}
@@ -33,19 +40,38 @@ units:
     type: tfmodule
     providers: *provider_aws
     source: terraform-aws-modules/vpc/aws
-    version: "3.11.0"
+    version: "4.0.2"
     inputs:
       name: {{ .variables.cluster_name }}
       cidr: {{ $createVpcCIDR }}
+      enable_nat_gateway: true
+      map_public_ip_on_launch: true
+      single_nat_gateway: true
+      one_nat_gateway_per_az: false
+      enable_dns_hostnames: true
+      enable_dns_support: true
+      create_egress_only_igw: true
+      enable_vpn_gateway: true
+      create_database_subnet_group: true
       public_subnets:
-      {{- range $index, $_ := .variables.azs }}
+      {{- range $index, $_ := $azs }}
         - {{ cidrSubnet $createVpcCIDR 4 $index }}
       {{- end }}
       private_subnets:
-      {{- range $index, $_ := .variables.azs }}
+      {{- range $index, $_ := $azs }}
         - {{ cidrSubnet $createVpcCIDR 4 (add $index $azs_count ) }}
       {{- end }}
-      azs: {{ insertYAML .variables.azs }}
+      database_subnets:
+      {{- range $index, $_ := $azs }}
+        - {{ cidrSubnet $createVpcCIDR 4 (add $index $azs_count $azs_count ) }}
+      {{- end }}
+      public_subnet_tags:
+        "kubernetes.io/cluster/{{ .variables.cluster_name }}": "owned"
+        "kubernetes.io/role/lb": 1
+      private_subnet_tags:
+        "kubernetes.io/cluster/{{ .variables.cluster_name }}": "owned"
+        "kubernetes.io/role/internal-lb": 1
+      azs: {{ insertYAML $azs }}
   {{- end }}
   -
     name: ext-dns-iam
@@ -58,7 +84,8 @@ units:
   -
     name: k3s
     type: tfmodule
-    source: github.com/shalb/terraform-aws-k3s?ref=v0.4.0
+    source: /home/arti/shalb/terraform-aws-k3s
+    # source: github.com/shalb/terraform-aws-k3s?ref=v0.4.1
     inputs:
       cluster_name: {{ .variables.cluster_name }}
       extra_args:
