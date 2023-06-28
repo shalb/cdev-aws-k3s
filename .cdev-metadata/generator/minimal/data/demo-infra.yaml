@@ -3,7 +3,7 @@ template: https://github.com/shalb/cdev-aws-k3s?ref=v0.3.3
 kind: Stack
 backend: aws-backend
 variables:
-  cluster_name: k3s-demo-boston
+  cluster_name: /{ .name }/
   bucket: {{ .project.variables.state_bucket_name }}
   region: {{ .project.variables.region }}
   organization: {{ .project.variables.organization }}
