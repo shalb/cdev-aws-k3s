@@ -84,7 +84,7 @@ units:
   -
     name: k3s
     type: tfmodule
-    source: github.com/shalb/terraform-aws-k3s?ref=v0.4.1
+    source: github.com/shalb/terraform-aws-k3s?ref=v0.4.2
     inputs:
       cluster_name: {{ .variables.cluster_name }}
       extra_args:
