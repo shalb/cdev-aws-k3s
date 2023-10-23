@@ -3,10 +3,9 @@ kind: StackTemplate
 units:
   -
     name: kuard
-    type: k8s-manifest
+    type: kubernetes
     namespace: default
-    path: ./manifests/
-    apply_template: true
+    source: ./manifests/
     kubeconfig: {{ .variables.kubeconfig }}
     kubectl_opts: "--wait=true"
     inputs:

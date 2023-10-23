@@ -4,5 +4,5 @@ kind: Stack
 backend: aws-backend
 variables:
   replicas: 3
-  domain: {{ output "k3s-demo.outputs.cluster_name" }}.{{ .project.variables.domain }}
-  kubeconfig: {{ output "k3s-demo.kubeconfig.kubeconfig_path" }}
+  domain: {{ remoteState "k3s-demo.outputs.cluster_name" }}.{{ .project.variables.domain }}
+  kubeconfig: {{ output "k3s-demo.kubeconfig.path" }}

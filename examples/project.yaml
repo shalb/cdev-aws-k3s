@@ -1,10 +1,10 @@
-name: demo
+name: cdev-example
 kind: Project
 backend: aws-backend
 variables:
-  organization: shalb # sample global variable
+  organization: my-organization
   region: eu-central-1
-  state_bucket_name: cdev-k3s-arti # create and set your s3 bucket here
+  state_bucket_name: cdev-state
   domain: cluster.dev
 # exports:
 #  AWS_PROFILE: cluster-dev # optional set the AWS profile to use during apply

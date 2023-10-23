@@ -1,15 +1,16 @@
 name: k3s-demo
-template: https://github.com/shalb/cdev-aws-k3s?ref=main
+template: https://github.com/shalb/cdev-aws-k3s?ref=v0.4.0
+# template: ../
 kind: Stack
 backend: aws-backend
 variables:
-  cluster_name: k3s-demo-boston
+  cluster_name: demo-k3s
   bucket: {{ .project.variables.state_bucket_name }}
   region: {{ .project.variables.region }}
   organization: {{ .project.variables.organization }}
   domain: {{ .project.variables.domain }}
   instance_type: "t3.medium"
-  k3s_version: "1.25.11+k3s1"
+  k3s_version: "v1.28.2+k3s1"
   # Uncomment lines below if you need to specify the VPC
   #vpc_id: "vpc-5ecf1234"
   #public_subnets:
