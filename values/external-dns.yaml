@@ -1,0 +1,9 @@
+aws:
+  region: {{ .variables.region }}
+  zoneType: "public"
+policy: upsert-only
+serviceAccount:
+  create: true
+metrics:
+  enabled: true
+logLevel: debug

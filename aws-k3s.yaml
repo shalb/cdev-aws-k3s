@@ -11,10 +11,9 @@ _p: &provider_aws
 - aws:
     region: {{ .variables.region }}
 
-
 name: aws-k3s
 kind: StackTemplate
-cliVersion: ">=0.6.1"
+cliVersion: ">=v0.8.0"
 units:
   -
     name: aws_key_pair
@@ -25,6 +24,7 @@ units:
       create_key_pair: true
       public_key: {{ .variables.public_key }}
       key_name: {{ .variables.public_key_name }}
+  {{- if .variables.domain }}
   -
     name: route53
     type: tfmodule
@@ -34,6 +34,7 @@ units:
       cluster_name: {{ .variables.cluster_name }}
       cluster_domain: {{ .variables.domain }}
       zone_delegation: {{ if eq .variables.domain "cluster.dev" }}true{{ else }}false{{ end }}
+  {{- end }}
   {{- if not .variables.vpc_id }}
   -
     name: vpc
@@ -74,22 +75,16 @@ units:
       azs: {{ insertYAML $azs }}
   {{- end }}
   -
-    name: ext-dns-iam
-    type: tfmodule
-    source: ./ext-dns-iam
-    providers: *provider_aws
-    inputs:
-      name: {{ .variables.cluster_name }}-test
-      domain: {{ remoteState "this.route53.zone_id" }}
-  -
     name: k3s
     type: tfmodule
-    source: github.com/shalb/terraform-aws-k3s?ref=v0.4.2
+    source: github.com/shalb/terraform-aws-k3s?ref=v0.5.0
     inputs:
       cluster_name: {{ .variables.cluster_name }}
       extra_args:
         - "--disable traefik"
+      {{ if .variables.domain }}
       domain: {{ remoteState "this.route53.domain" }}
+      {{ end  }}
       k3s_version: {{ .variables.k3s_version }}
       {{- if .variables.vpc_id }}
       public_subnets: {{ insertYAML .variables.public_subnets }}
@@ -102,23 +97,70 @@ units:
       master_node_count: {{ .variables.master_node_count }}
       worker_node_groups: {{ insertYAML .variables.worker_node_groups  }}
       master_iam_policies:
-        - {{ remoteState "this.ext-dns-iam.arn" }}
-      worker_iam_policies:
-        - {{ remoteState "this.ext-dns-iam.arn" }}
+        - {{ remoteState "this.iam-policy-external-dns.arn" }}
       enable_asg_rolling_auto_update: true
   -
     name: kubeconfig
-    type: shell
+    type: tfmodule
     force_apply: true
     depends_on: this.k3s
-    apply:
-      commands:
-        - aws s3 cp s3://{{ .variables.bucket }}/{{ .variables.cluster_name }}/kubeconfig /tmp/kubeconfig_{{ .variables.cluster_name }}
-        - echo "kubeconfig_base64=$(cat /tmp/kubeconfig_{{ .variables.cluster_name }} | base64 -w 0)"
-        - echo "kubeconfig_path=/tmp/kubeconfig_{{ .variables.cluster_name }}"
-    outputs:
-      type: separator
-      separator: "="
+    source: github.com/shalb/terraform-modules//local-file?ref=0.0.1
+    inputs:
+      filename: /tmp/kubeconfig_{{ .variables.cluster_name }}
+      source_s3:
+        bucket: {{ .variables.bucket }}
+        key: {{ .variables.cluster_name }}/kubeconfig
+      file_permission: "0600"
+  {{- if .variables.domain }}
+  -
+    name: iam-policy-external-dns
+    type: tfmodule
+    source: "terraform-aws-modules/iam/aws//modules/iam-policy"
+    version: "5.30.0"
+    providers: *provider_aws
+    inputs:
+      name: AllowRoute53ZoneManagement-{{ .variables.cluster_name }}
+      policy: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:GetChange"
+                ],
+                "Resource": [
+                "arn:aws:route53:::hostedzone/{{ .variables.domain }}",
+                "arn:aws:route53:::change/*"
+                ]
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                "route53:ListHostedZones",
+                "route53:ListResourceRecordSets",
+                "route53:ListHostedZonesByName"
+                ],
+                "Resource": [
+                "*"
+                ]
+            }
+            ]
+        }
+  -
+    name: external-dns
+    type: helm
+    source:
+      repository: "https://charts.bitnami.com/bitnami"
+      chart: "external-dns"
+      version: "6.26.3"
+    kubeconfig: {{ remoteState "this.kubeconfig.path" }}
+    additional_options:
+      namespace: "external-dns"
+      create_namespace: true
+    values:
+      - file: ./values/external-dns.yaml
   -
     name: cert-manager
     type: helm
@@ -126,7 +168,7 @@ units:
       repository: "https://charts.jetstack.io"
       chart: "cert-manager"
       version: "v1.6.1"
-    kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
+    kubeconfig: {{ output "this.kubeconfig.path" }}
     additional_options:
       namespace: "cert-manager"
       create_namespace: true
@@ -140,82 +182,33 @@ units:
       serviceAccount.create: true
   -
     name: cert-manager-issuer
-    type: k8s-manifest
-    path: ./cert-manager/issuer.yaml
-    kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
+    type: kubernetes
     depends_on: this.cert-manager
+    source: ./cert-manager/issuer.yaml
+    kubeconfig: {{ remoteState "this.kubeconfig.path" }}
+  {{- end }}
   -
     name: ingress-nginx
     type: helm
     source:
       repository: "https://kubernetes.github.io/ingress-nginx"
       chart: "ingress-nginx"
-      version: "4.0.13"
-    kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
+      version: "4.7.3"
+    kubeconfig: {{ output "this.kubeconfig.path" }}
     additional_options:
       namespace: "ingress-nginx"
       create_namespace: true
+      timeout: 60
     inputs:
         service.type: LoadBalancer
         controller.admissionWebhooks.enabled: false
         service.externalTrafficPolicy: Local
         controller.ingressClassResource.default: true
   -
-    name: csi
-    type: helm
-    source:
-      repository: "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
-      chart: "aws-ebs-csi-driver"
-      version: "2.6.9"
-    kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
-    additional_options:
-      namespace: "kube-system"
-    values:
-      - file: ./csi/values.yaml
-        apply_template: false
-  -
-    name: argocd
-    type: helm
-    source:
-      repository: "https://argoproj.github.io/argo-helm"
-      chart: "argo-cd"
-      version: "4.5.7"
-    kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
-    depends_on: this.cert-manager-issuer
-    additional_options:
-      namespace: "argocd"
-      create_namespace: true
-    inputs:
-      service.type: LoadBalancer
-      server.certificate.domain: argocd.{{ .variables.cluster_name }}.{{ .variables.domain }}
-      server.certificate.enabled: true
-      server.certificate.issuer.name: letsencrypt-prod
-      server.certificate.issuer.kind: ClusterIssuer
-      server.ingress.enabled: true
-      server.ingress.tls[0].secretName: argocd-secret
-      server.ingress.hosts[0]: argocd.{{ .variables.cluster_name }}.{{ .variables.domain }}
-      server.ingress.tls[0].hosts[0]: argocd.{{ .variables.cluster_name }}.{{ .variables.domain }}
-      server.ingress.annotations.cert-manager\.io/cluster-issuer: letsencrypt-prod
-      server.ingress.annotations.kubernetes\.io/ingress.class: nginx
-      server.ingress.annotations.kubernetes\.io/tls-acme: "true"
-      server.ingress.annotations.nginx\.ingress\.kubernetes\.io/ssl-passthrough: "true"
-      server.ingress.annotations.nginx\.ingress\.kubernetes\.io/backend-protocol: "HTTPS"
-      server.config.url: https://argocd.{{ .variables.cluster_name }}.{{ .variables.domain }}
-      configs.secret.argocdServerAdminPassword: {{ .variables.argocdServerAdminPassword }}
-      configs.secret.argocdServerAdminPasswordMtime: "2021-01-01T00:00:00Z"
-  -
-    name: argocd_apps
-    type: k8s-manifest
-    path: ./argocd-apps/
-    kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
-    depends_on: this.argocd
-  -
     name: outputs
     type: printer
-    depends_on: this.argocd_apps
     outputs:
       cluster_name: {{ .variables.cluster_name }}
       region: {{ .variables.region }}
-      kubeconfig: {{ output "this.kubeconfig.kubeconfig_path" }}
+      kubeconfig: {{ output "this.kubeconfig.path" }}
       k3s_version: {{ .variables.k3s_version }}
-      argocd_url: https://argocd.{{ .variables.cluster_name }}.{{ .variables.domain }}
