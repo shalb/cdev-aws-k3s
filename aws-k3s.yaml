@@ -13,7 +13,7 @@ _p: &provider_aws
 
 name: aws-k3s
 kind: StackTemplate
-cliVersion: ">=0.7.23"
+cliVersion: ">=v0.8.0"
 units:
   -
     name: aws_key_pair
@@ -77,8 +77,7 @@ units:
   -
     name: k3s
     type: tfmodule
-    source: /home/arti/shalb/terraform-aws-k3s
-    # source: github.com/shalb/terraform-aws-k3s?ref=v0.4.1
+    source: github.com/shalb/terraform-aws-k3s?ref=v0.5.0
     inputs:
       cluster_name: {{ .variables.cluster_name }}
       extra_args:
