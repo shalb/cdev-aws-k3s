@@ -22,7 +22,7 @@ The resources to be created:
 2. AWS account.
 3. AWS CLI installed.
 4. kubectl installed.
-5. [Cluster.dev client installed](https://docs.cluster.dev/get-started-install/).
+5. [Cluster.dev client installed](https://docs.cluster.dev/installation-upgrade/).
 
 ## Quick Start
 
