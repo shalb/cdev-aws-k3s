@@ -9,7 +9,7 @@ variables:
   organization: {{ .project.variables.organization }}
   domain: {{ .project.variables.domain }}
   instance_type: "t3.medium"
-  k3s_version: "1.25.11+k3s1"
+  k3s_version: "v1.28.2+k3s1"
   # Uncomment lines below if you need to specify the VPC
   #vpc_id: "vpc-5ecf1234"
   #public_subnets:
