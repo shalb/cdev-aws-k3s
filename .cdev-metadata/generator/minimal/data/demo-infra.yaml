@@ -1,5 +1,5 @@
 name: k3s-demo
-template: https://github.com/shalb/cdev-aws-k3s?ref=v0.4.0
+template: https://github.com/shalb/cdev-aws-k3s
 kind: Stack
 backend: aws-backend
 variables:

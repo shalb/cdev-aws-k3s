@@ -28,6 +28,7 @@ units:
   -
     name: route53
     type: tfmodule
+    providers: *provider_aws
     source: github.com/shalb/cluster.dev-domain?ref=0.1.0
     inputs:
       region: {{ .variables.region }}
@@ -78,6 +79,7 @@ units:
     name: k3s
     type: tfmodule
     source: github.com/shalb/terraform-aws-k3s?ref=v0.5.0
+    providers: *provider_aws
     inputs:
       cluster_name: {{ .variables.cluster_name }}
       extra_args:
@@ -102,6 +104,7 @@ units:
   -
     name: kubeconfig
     type: tfmodule
+    providers: *provider_aws
     force_apply: true
     depends_on: this.k3s
     source: github.com/shalb/terraform-modules//local-file?ref=0.0.1
