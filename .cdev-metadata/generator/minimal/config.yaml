@@ -22,7 +22,7 @@ options:
     default: "cdev-state"
 help_message: |
   ###############################################################################
-  # Cluster.dev project generation for AWS cloud.                                #
+  # Cluster.dev project generation for AWS cloud.                               #
   # cdev console tool generator                                                 #
   ###############################################################################
   Before your begin:
